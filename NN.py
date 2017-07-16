@@ -38,14 +38,14 @@ def windowedMinMaxTestingData(sac, point, preSize=10, postSize=20):
 
 
 # Inputa a sac and get the on_of array.
-def getTrigger(sac, short=10, long=1000):
+def getTrigger(sac, short=2, long=10):
     df = sac.stats.sampling_rate
     # get cft
     cft = recursive_sta_lta(sac.data, int(short * df), int(long * df))
     # set threshold
     threshold = np.mean(cft) + (np.max(cft) - np.mean(cft))/4
     # get on
-    on_of = trigger_onset(cft, threshold, threshold)
+    on_of = trigger_onset(cft, threshold, threshold*0.9)
     if len(on_of) != 0:
         return on_of[:, 0]
     else:
