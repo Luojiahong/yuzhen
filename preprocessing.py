@@ -71,6 +71,7 @@ def getAllWindowedPositiveTrainingData(dirAdd, preSize=10, postSize=20):
             trainS.append(eachTrainS)
     return np.array(trainP), np.array(trainS)
 
+
 # Get ALL windowed MINMAX POSITIVE data for training.
 def getAllWindowedMinMaxPositiveTrainingData(dirAdd, preSize=10, postSize=20):
     trainP = []
@@ -131,6 +132,7 @@ def getSomeWindowedNegativeTrainingData(dirAdd, size=30, num=100):
         trainNegative.append(eachNegativeTrainingData)
     return np.array(trainNegative)
 
+
 # Get SOME windowed MINMAX NEGATIVE data for training.
 def getSomeWindowedMinMaxNegativeTrainingData(dirAdd, size=30, num=100):
     trainNegative=[]
@@ -142,9 +144,10 @@ def getSomeWindowedMinMaxNegativeTrainingData(dirAdd, size=30, num=100):
         randomFile = os.path.join('%s/%s' % (dirAdd, randomFileDir))
         eachSac = readOneSac(randomFile)
         eachNegativeTrainingData = getWindowedNegativeTrainingData(eachSac, size)
-        eachNegativeTrainingData = minMaxScale(eachNegativeTrainingData, range=(-100,100))
+        eachNegativeTrainingData = minMaxScale(eachNegativeTrainingData, range=(-100, 100))
         trainNegative.append(eachNegativeTrainingData)
     return np.array(trainNegative)
+
 
 # Get SOME windowed STANDARD NEGATIVE data for training.
 def getSomeWindowedStandardNegativeTrainingData(dirAdd, size=30, num=100):
@@ -195,7 +198,8 @@ if __name__ == '__main__':
     # print s[0]
     # plotPositiveTrainingDataSegment(p[1])
 
-    sac = readOneSac('../sample/example30/01.JMG.BHE.SAC')
-    a = getSomeWindowedStandardNegativeTrainingData('../sample/example30/', size=30, num=100)
-    print a, a.shape
-    # print StandardScaler().fit_transform(a.reshape(-1,1)).reshape(1,-1)[0].shape
+    # sac = readOneSac('../sample/example30/01.JMG.BHE.SAC')
+    # a = getSomeWindowedStandardNegativeTrainingData('../sample/example30/', size=30, num=100)
+    # print a, a.shape
+    # # print StandardScaler().fit_transform(a.reshape(-1,1)).reshape(1,-1)[0].shape
+    plotPositiveTrainingDataSac('../sample/example30/01.JMG.BHE.SAC')

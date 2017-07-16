@@ -54,12 +54,12 @@ def getTrigger(sac, short=10, long=1000):
 
 def trainNN():
     # POSITIVE training data
-    posPX, posSX = getAllWindowedMinMaxPositiveTrainingData('./sample/example30', preSize=50, postSize=50)
+    posPX, posSX = getAllWindowedMinMaxPositiveTrainingData('./sample/example30', preSize=10, postSize=20)
     posPY = np.array([[1]] * len(posPX))
     posSY = np.array([[1]] * len(posSX))
 
     # NEGATIVE training data
-    negX = getSomeWindowedMinMaxNegativeTrainingData('./sample/example30/', size=100, num=200)
+    negX = getSomeWindowedMinMaxNegativeTrainingData('./sample/example30/', size=30, num=200)
     negY = np.array([[0]] * 200)
 
     # ALL training data
@@ -71,7 +71,7 @@ def trainNN():
     # Dense是指全连接层
     # 定义model
     model = Sequential()
-    model.add(Dense(50, input_dim=100, activation='sigmoid'))
+    model.add(Dense(50, input_dim=30, activation='sigmoid'))
     model.add(Dense(50, activation='sigmoid'))
     model.add(Dense(10, activation='sigmoid'))
     model.add(Dense(1, activation='sigmoid'))
@@ -91,11 +91,11 @@ def predictOneSacSaved(sacDir):
     if len(triggers) != 0:
         i = 1
         for point in triggers:
-            testingSeq = windowedMinMaxTestingData(sac, point, preSize=50, postSize=50)
+            testingSeq = windowedMinMaxTestingData(sac, point, preSize=10, postSize=20)
             prob = model.predict(testingSeq.reshape(1, -1))
             if prob > 0.6:
                 time = point/100
-                time_submission = float(datetime.datetime.fromtimestamp(ti_unix+ 8*3600+time).strftime('%Y%m%d%H%M%S.%f'))
+                time_submission = float(datetime.datetime.fromtimestamp(ti_unix+8*3600+time).strftime('%Y%m%d%H%M%S.%f'))
                 if i % 2 == 1:
                     wave_type = 'P'
                 else:
