@@ -59,7 +59,7 @@ def trainNN():
     posSY = np.array([[1]] * len(posSX))
 
     # NEGATIVE training data
-    negX = getSomeWindowedMinMaxNegativeTrainingData('./sample/example30/', size=30, num=200)
+    negX = getSomeWindowedMinMaxNegativeTrainingData('./sample/example30', size=30, num=200)
     negY = np.array([[0]] * 200)
 
     # ALL training data
