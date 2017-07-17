@@ -94,7 +94,7 @@ def predictOneSacSaved(sacDir):
             testingSeq = windowedMinMaxTestingData(sac, point, preSize=10, postSize=20)
             prob = model.predict(testingSeq.reshape(1, -1))
             if prob > 0.6:
-                time = point/100
+                time = round(float(point)/100.00, 2)
                 time_submission = float(datetime.datetime.fromtimestamp(ti_unix+8*3600+time).strftime('%Y%m%d%H%M%S.%f'))
                 if i % 2 == 1:
                     wave_type = 'P'
