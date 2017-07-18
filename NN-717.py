@@ -67,7 +67,7 @@ def trainNN(positive_data_type='all', negative_data_num=200):
 
     # NEGATIVE training data
     negX = getSomeWindowedMinMaxNegativeTrainingData('./sample/example30/', size=100, num=negative_data_num)
-    negY = np.array([[0]] * 200)
+    negY = np.array([[0]] * len(negX))
 
     if positive_data_type == 'p' or positive_data_type == 'P':
         # Only P positive training data
