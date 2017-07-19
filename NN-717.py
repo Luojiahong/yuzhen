@@ -1,5 +1,7 @@
 # coding=utf-8
 
+# 修改preSize=50，postSize=50；在trainNN()中给出P、S单独训练接口。
+
 import obspy
 import numpy as np
 import pandas as pd
