@@ -37,15 +37,15 @@ def windowedMinMaxTestingData(sac, point, preSize=10, postSize=20):
     return np.array(testingSeq)
 
 
-# Inputa a sac and get the on_of array.
-def getTrigger(sac, short=2, long=10):
+# Input a sac and get the on_of array.
+def getTrigger(sac, short=2, long=30):
     df = sac.stats.sampling_rate
     # get cft
     cft = recursive_sta_lta(sac.data, int(short * df), int(long * df))
     # set threshold
     threshold = np.mean(cft) + (np.max(cft) - np.mean(cft))/4
     # get on
-    on_of = trigger_onset(cft, threshold, threshold*0.9)
+    on_of = trigger_onset(cft, threshold*1.1, threshold*0.9)
     if len(on_of) != 0:
         return on_of[:, 0]
     else:
@@ -96,10 +96,11 @@ def predictOneSacSaved(sacDir):
             if prob > 0.6:
                 time = round(float(point)/100.00, 2)
                 time_submission = float(datetime.datetime.fromtimestamp(ti_unix+8*3600+time).strftime('%Y%m%d%H%M%S.%f'))
-                if i % 2 == 1:
-                    wave_type = 'P'
-                else:
-                    wave_type = 'S'
+                # if i % 2 == 1:
+                #     wave_type = 'P'
+                # else:
+                #     wave_type = 'S'
+                wave_type = 'P'
                 res.append([sac.stats.station, time_submission, wave_type])
                 i += 1
     return res
@@ -110,7 +111,7 @@ if __name__ == '__main__':
     starttime = datetime.datetime.now()
     csvfile = file('result.csv', 'wb')
     writer = csv.writer(csvfile)
-    writer.writerow(['Station', 'Time', 'Type'])
+    # writer.writerow(['Station', 'Time', 'Type'])
 
     model = trainNN()
     dirs = ['./preliminary/before', './preliminary/after']
