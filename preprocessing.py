@@ -73,12 +73,12 @@ def getAllWindowedPositiveTrainingData(dirAdd, preSize=10, postSize=20):
 
 
 # Get ALL windowed MINMAX POSITIVE data for training.
-def getAllWindowedMinMaxPositiveTrainingData(dirAdd, preSize=10, postSize=20):
+def getAllWindowedMinMaxPositiveTrainingData(dir, preSize=10, postSize=20):
     trainP = []
     trainS = []
-    pathDir = os.listdir(dirAdd)
-    for allDir in pathDir:
-        eachTrainFile = os.path.join('%s/%s' % (dirAdd, allDir))
+    files = os.listdir(dir)
+    for each_file in files:
+        eachTrainFile = os.path.join('%s/%s' % (dir, each_file))
         eachSac = readOneSac(eachTrainFile)
         eachTrainP, eachTrainS = windowedTrainData(eachSac, preSize, postSize)
         # In case of null S or P
