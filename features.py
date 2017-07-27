@@ -2,7 +2,6 @@
 
 from obspy.signal.trigger import *
 from preprocessing import minMaxScale, readOneSac
-from sklearn.cross_validation import train_test_split
 import pandas as pd
 import xgboost as xgb
 import os
@@ -110,4 +109,25 @@ def get_all_positive_features(dir_add):
             neg_features = neg_features.append(this_neg_features)
 
     return p_features, s_features, neg_features
+
+
+# 线上训练集中各点的features
+def get_points_features(trace, points):
+    trace.data = minMaxScale(trace.data, range=(-100, 100))
+    # 传统cft变换
+    cft_classic_sta_lta_feature = classic_sta_lta_feature(trace, nsta=0.1, nlta=1)
+    cft_recursive_sta_lta_feature = recursive_sta_lta_feature(trace, nsta=0.1, nlta=1)
+    cft_delayed_sta_lta_feature = delayed_sta_lta_feature(trace, nsta=0.1, nlta=1)
+    cft_z_detect_feature = z_detect_feature(trace, nsta=0.1)
+    cft_carl_sta_trig_feature = carl_sta_trig_feature(trace, nsta=0.1, nlta=1)
+
+    points_features = pd.DataFrame()
+    for point in points:
+        this_features = pd.DataFrame({'classic': cft_classic_sta_lta_feature[point],
+                                      'recursive': cft_recursive_sta_lta_feature[point],
+                                      'delayed': cft_delayed_sta_lta_feature[point],
+                                      'z_detect': cft_z_detect_feature[point],
+                                      'carl': cft_carl_sta_trig_feature[point]}, index=[point])
+        points_features = points_features.append(this_features)
+    return points_features
 
