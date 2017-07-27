@@ -2,7 +2,9 @@
 
 from obspy.signal.trigger import *
 from preprocessing import minMaxScale, readOneSac
+from sklearn.cross_validation import train_test_split
 import pandas as pd
+import xgboost as xgb
 import os
 
 
@@ -41,31 +43,35 @@ def carl_sta_trig_feature(trace, nsta=2, nlta=10, ratio=0.8, quiet=0.8):
     return cft
 
 
-def get_all_features(dir):
+# !!! 得到样本的features
+def get_all_positive_features(dir_add):
+    # 正样本features
     p_features = pd.DataFrame()
     s_features = pd.DataFrame()
+    # 负样本features
+    neg_features = pd.DataFrame()
 
-    files = os.listdir(dir)
+    # 循环读取dir下的每个trace
+    files = os.listdir(dir_add)
     for trace_file in files:
-        eachTrainFile = os.path.join('%s/%s' % (dir, trace_file))
+        eachTrainFile = os.path.join('%s/%s' % (dir_add, trace_file))
         trace = readOneSac(eachTrainFile)
         trace_len = len(trace.data)
         trace.data = minMaxScale(trace.data, range=(-100, 100))
 
-        # 提取正训练样本点
-        relativeStartTime = trace.stats.sac.b
-        sampling_rate = trace.stats.sampling_rate
-        p_point = int((trace.stats.sac.a - relativeStartTime) * sampling_rate)
-        s_point = int((trace.stats.sac.t0 - relativeStartTime) * sampling_rate)
-
-        # 提取正训练样本点的各维特征
+        # 传统cft变换
         cft_classic_sta_lta_feature = classic_sta_lta_feature(trace, nsta=0.1, nlta=1)
         cft_recursive_sta_lta_feature = recursive_sta_lta_feature(trace, nsta=0.1, nlta=1)
         cft_delayed_sta_lta_feature = delayed_sta_lta_feature(trace, nsta=0.1, nlta=1)
         cft_z_detect_feature = z_detect_feature(trace, nsta=0.1)
         cft_carl_sta_trig_feature = carl_sta_trig_feature(trace, nsta=0.1, nlta=1)
 
-        # 做成pandas
+        # 提取正训练样本点
+        relativeStartTime = trace.stats.sac.b
+        sampling_rate = trace.stats.sampling_rate
+        p_point = int((trace.stats.sac.a - relativeStartTime) * sampling_rate)
+        s_point = int((trace.stats.sac.t0 - relativeStartTime) * sampling_rate)
+        # 提取正训练样本点（p、s）的各维特征
         if 0 < p_point < trace_len:
             this_p_features = pd.DataFrame({'classic': cft_classic_sta_lta_feature[p_point],
                                             'recursive': cft_recursive_sta_lta_feature[p_point],
@@ -74,7 +80,6 @@ def get_all_features(dir):
                                             'carl': cft_carl_sta_trig_feature[p_point]}, index=[trace_file])
         else:
             this_p_features = pd.DataFrame()
-
         if 0 < s_point < trace_len:
             this_s_features = pd.DataFrame({'classic': cft_classic_sta_lta_feature[s_point],
                                             'recursive': cft_recursive_sta_lta_feature[s_point],
@@ -87,11 +92,22 @@ def get_all_features(dir):
         p_features = p_features.append(this_p_features)
         s_features = s_features.append(this_s_features)
 
-    return p_features, s_features
+        # 提取负训练样本点（p前1秒，s后1秒）
+        if 0 < p_point < trace_len and 0 < s_point < trace_len:
+            neg_points = [p_point - 1 * sampling_rate, s_point + 1 * sampling_rate]
+        else:
+            neg_points = []
+        # 提取负训练样本点的各维特征
+        for neg_point in neg_points:
+            if neg_point:
+                this_neg_features = pd.DataFrame({'classic': cft_classic_sta_lta_feature[neg_point],
+                                                  'recursive': cft_recursive_sta_lta_feature[neg_point],
+                                                  'delayed': cft_delayed_sta_lta_feature[neg_point],
+                                                  'z_detect': cft_z_detect_feature[neg_point],
+                                                  'carl': cft_carl_sta_trig_feature[neg_point]}, index=[trace_file])
+            else:
+                this_neg_features = pd.DataFrame()
+            neg_features = neg_features.append(this_neg_features)
 
+    return p_features, s_features, neg_features
 
-if __name__ == '__main__':
-    p, s = get_all_features('./example30')
-    print p
-    print '----'
-    print s
