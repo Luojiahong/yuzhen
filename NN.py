@@ -4,6 +4,7 @@ import obspy
 import numpy as np
 import pandas as pd
 import csv
+import datetime
 
 from keras.optimizers import SGD
 from keras.models import Sequential

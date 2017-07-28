@@ -2,8 +2,6 @@ from obspy import read
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 import os
 import numpy as np
-import matplotlib.pyplot as plt
-from pylab import *
 from obspy.core import UTCDateTime
 
 
@@ -167,39 +165,39 @@ def getSomeWindowedStandardNegativeTrainingData(dirAdd, size=30, num=100):
 
 # Plot the training data with P/S arrival time.
 # '../sample/example30/01.JMG.BHE.SAC'
-def plotPositiveTrainingDataSac(sacAdd):
-    sac = readOneSac(sacAdd)
-    sampling_rate = sac.stats.sampling_rate
-    ax = plt.subplot(111)
-    plt.plot(sac.data, 'k')
-    ymin, ymax = ax.get_ylim()
-    PTime = sac.stats.sac.a - sac.stats.sac.b
-    STime = sac.stats.sac.t0 - sac.stats.sac.b
-    plt.vlines(PTime * sampling_rate, ymin, ymax, color='r', linewidth=2)
-    plt.vlines(STime * sampling_rate, ymin, ymax, color='b', linewidth=2)
-    plt.show()
+# def plotPositiveTrainingDataSac(sacAdd):
+#     sac = readOneSac(sacAdd)
+#     sampling_rate = sac.stats.sampling_rate
+#     ax = plt.subplot(111)
+#     plt.plot(sac.data, 'k')
+#     ymin, ymax = ax.get_ylim()
+#     PTime = sac.stats.sac.a - sac.stats.sac.b
+#     STime = sac.stats.sac.t0 - sac.stats.sac.b
+#     plt.vlines(PTime * sampling_rate, ymin, ymax, color='r', linewidth=2)
+#     plt.vlines(STime * sampling_rate, ymin, ymax, color='b', linewidth=2)
+#     plt.show()
+#
+#
+# def plotPositiveTrainingDataSegment(segmentData):
+#     plt.plot(range(len(segmentData)), segmentData)
+#     plt.show()
 
 
-def plotPositiveTrainingDataSegment(segmentData):
-    plt.plot(range(len(segmentData)), segmentData)
-    plt.show()
-
-
-# Main
-if __name__ == '__main__':
-    # sac = readOneSac('../sample/example30/01.JMG.BHE.SAC')
-    # a,b = windowedTrainData(sac, 10, 20)
-    # print a, len(a)
-    # print b, len(b)
-    #
-    # plotPositiveTrainingDataSac('../sample/example30/16.JMG.BHE.SAC')
-    # p, s = getAllWindowedStandardPositiveTrainingData('../sample/example30')
-    # print p[0]
-    # print s[0]
-    # plotPositiveTrainingDataSegment(p[1])
-
-    # sac = readOneSac('../sample/example30/01.JMG.BHE.SAC')
-    # a = getSomeWindowedStandardNegativeTrainingData('../sample/example30/', size=30, num=100)
-    # print a, a.shape
-    # # print StandardScaler().fit_transform(a.reshape(-1,1)).reshape(1,-1)[0].shape
-    plotPositiveTrainingDataSac('../sample/example30/01.JMG.BHE.SAC')
+# # Main
+# if __name__ == '__main__':
+#     # sac = readOneSac('../sample/example30/01.JMG.BHE.SAC')
+#     # a,b = windowedTrainData(sac, 10, 20)
+#     # print a, len(a)
+#     # print b, len(b)
+#     #
+#     # plotPositiveTrainingDataSac('../sample/example30/16.JMG.BHE.SAC')
+#     # p, s = getAllWindowedStandardPositiveTrainingData('../sample/example30')
+#     # print p[0]
+#     # print s[0]
+#     # plotPositiveTrainingDataSegment(p[1])
+#
+#     # sac = readOneSac('../sample/example30/01.JMG.BHE.SAC')
+#     # a = getSomeWindowedStandardNegativeTrainingData('../sample/example30/', size=30, num=100)
+#     # print a, a.shape
+#     # # print StandardScaler().fit_transform(a.reshape(-1,1)).reshape(1,-1)[0].shape
+#     plotPositiveTrainingDataSac('../sample/example30/01.JMG.BHE.SAC')
