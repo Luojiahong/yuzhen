@@ -5,6 +5,7 @@ from preprocessing import minMaxScale, readOneSac
 import pandas as pd
 import xgboost as xgb
 import os
+# import matplotlib.pyplot as plt
 
 
 # 传统sta_lta特征函数cft
@@ -40,6 +41,85 @@ def carl_sta_trig_feature(trace, nsta=2, nlta=10, ratio=0.8, quiet=0.8):
     samp_rate = trace.stats.sampling_rate
     cft = carl_sta_trig(trace.data, int(nsta * samp_rate), int(nlta * samp_rate), ratio, quiet)
     return cft
+
+
+# 能量变化率cft。
+def energy_change_ratio(trace):
+    trace_data = np.concatenate([trace.data, [0]], axis=0)
+    extra_trace = np.concatenate([[0], trace.data], axis=0)
+    cft = np.array(trace_data) - np.array(extra_trace)
+    cft = cft[:-1]
+    # for i in range(1, len(trace.data)):
+    #     trace.data[i] = trace.data[i] - trace.data[i - 1]
+    # cft = trace.data
+    return cft
+
+
+def forward_backward_ratio_point(trace, point, t=1, type='var'):
+    sampling_rate = trace.stats.sampling_rate
+    length = len(trace.data)
+    forward = int(point - t * sampling_rate)
+    backward = int(point + t * sampling_rate)
+    if type == 'var':
+        if forward > 0 and backward < length:
+            forward_seq = trace.data[forward: point]
+            backward_seq = trace.data[point: backward]
+            forward_var = np.var(forward_seq)
+            backward_var = np.var(backward_seq)
+            if backward_var == 0:
+                ratio = 999
+            else:
+                ratio = forward_var / backward_var
+        else:
+            ratio = 999
+    else:
+        if forward > 0 and backward < length:
+            forward_seq = trace.data[forward: point]
+            backward_seq = trace.data[point: backward]
+            forward_mean = np.mean(forward_seq)
+            backward_mean = np.mean(backward_seq)
+            if backward_mean == 0:
+                ratio = 999
+            else:
+                ratio = forward_mean / backward_mean
+        else:
+            ratio = 999
+    return ratio
+
+
+def forward_backward_ratio_trace(trace, t=2, type='mean'):
+    sampling_rate = trace.stats.sampling_rate
+    length = len(trace.data)
+    ratio_trace = []
+    for point in xrange(0, length):
+        forward = int(point - t * sampling_rate)
+        backward = int(point + t * sampling_rate)
+        if type == 'var':
+            if forward > 0 and backward < length:
+                forward_seq = trace.data[forward: point]
+                backward_seq = trace.data[point: backward]
+                forward_var = np.var(forward_seq)
+                backward_var = np.var(backward_seq)
+                if backward_var == 0:
+                    ratio = 999
+                else:
+                    ratio = forward_var / backward_var
+            else:
+                ratio = 0
+        else:
+            if forward > 0 and backward < length:
+                forward_seq = trace.data[forward: point]
+                backward_seq = trace.data[point: backward]
+                forward_mean = np.mean(forward_seq)
+                backward_mean = np.mean(backward_seq)
+                if backward_mean == 0:
+                    ratio = 999
+                else:
+                    ratio = forward_mean / backward_mean
+            else:
+                ratio = 0
+        ratio_trace.append(ratio)
+    return ratio_trace
 
 
 # !!! 得到样本的features
@@ -99,6 +179,7 @@ def get_all_positive_features(dir_add):
         # 提取负训练样本点的各维特征
         for neg_point in neg_points:
             if neg_point:
+                neg_point = int(neg_point)
                 this_neg_features = pd.DataFrame({'classic': cft_classic_sta_lta_feature[neg_point],
                                                   'recursive': cft_recursive_sta_lta_feature[neg_point],
                                                   'delayed': cft_delayed_sta_lta_feature[neg_point],
@@ -111,7 +192,8 @@ def get_all_positive_features(dir_add):
     return p_features, s_features, neg_features
 
 
-# 线上训练集中各点的features
+# 提取
+# 线上online训练集中各点的features
 def get_points_features(trace, points):
     trace.data = minMaxScale(trace.data, range=(-100, 100))
     # 传统cft变换
@@ -131,3 +213,47 @@ def get_points_features(trace, points):
         points_features = points_features.append(this_features)
     return points_features
 
+
+# if __name__ == '__main__':
+#     # 01.JMG.BHE.SAC
+#     # 04.JMG.BHE.SAC
+#     # 07.QCH.BHE.SAC
+#     # 10.PWU.BHZ.SAC
+#     # 11.QCH.BHZ.SAC
+#     # 17.PWU.BHN.SAC
+#     # 22.JMG.BHE.SAC
+#     # 26.PWU.BHN.SAC
+#     # 28.PWU.BHN.SAC
+#     # ./sample/example30/14.PWU.BHN.SAC
+#     # ./preliminary/after/GS.WDT.2008212160001.BHN
+#     trace = readOneSac('./preliminary/after/XX.JJS.2008240000000.BHN')
+#     trace.data = trace.data[1:165000]
+#     # trace.plot()
+#     # trace.data = energy_change_ratio(trace)
+#     # trace.data = minMaxScale(trace.data, range=(-100,100))
+#
+#     relativeStartTime = trace.stats.sac.b
+#     sampling_rate = trace.stats.sampling_rate
+#     p_point = int((trace.stats.sac.a - relativeStartTime) * sampling_rate)
+#     s_point = int((trace.stats.sac.t0 - relativeStartTime) * sampling_rate)
+#     print p_point, s_point
+#
+#     print 'p', forward_backward_ratio_point(trace, p_point, t=1, type='var')
+#     print 's', forward_backward_ratio_point(trace, s_point, t=1, type='var')
+#
+#     # x, y
+#     ratio = forward_backward_ratio_trace(trace, type='var', t=1)
+#     x = range(0, len(trace.data))
+#
+#     # for plot
+#     fig1 = plt.subplot(211)
+#     plt.plot(x, trace.data)
+#     ymin1, ymax1 = fig1.get_ylim()
+#     plt.vlines([p_point, s_point], ymin1, ymax1, colors='red')
+#
+#     fig2 = plt.subplot(212)
+#     plt.plot(x, ratio)
+#     ymin2, ymax2 = fig2.get_ylim()
+#     plt.vlines([p_point, s_point], ymin2, ymax2, colors='red')
+#
+#     plt.show()
